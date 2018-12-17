@@ -2,27 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
-const AWS = require('aws-sdk');
-const kms = new AWS.KMS();
 const app = express();
-
-
-
-// amazon web service with key management service
-kms.config.update({
-    region: 'us-east-2'
-});
-kms.config.apiVersion = {
-    kms: "2012-10-17"
-};
-let params = {
-    KeyId: "20b5b430-d2fb-4e48-89cc-0bf88840145f", // The identifier of the CMK to use for encryption. You can use the key ID or Amazon Resource Name (ARN) of the CMK, or the name or ARN of an alias that refers to the CMK.
-    Plaintext: "morakot" // The data to encrypt.
-};
-kms.listKeys((err,data) => {
-    if (err) console.log(err, err.stack); // an error occurred
-    else     console.log("data",data);           // successful response
-});
 
 
 // settings

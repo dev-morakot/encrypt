@@ -1,15 +1,33 @@
-const AWS = require('aws-sdk');
-const kms = new AWS.KMS({region: "us-east-1"});
+const crypto = require('crypto')
+const path = require('path')
+const fs = require('fs')
 
+function encrypt(toEncrypt, relativeOrAbsolutePathToPublicKey) {
+  const absolutePath = path.resolve(relativeOrAbsolutePathToPublicKey)
+  const publicKey = fs.readFileSync(absolutePath, 'utf8')
+  const buffer = Buffer.from(toEncrypt, 'utf8')
+  const encrypted = crypto.publicEncrypt(publicKey, buffer)
+  return encrypted.toString('base64')
+}
 
-kms.config.update({
-    region: 'us-east-1'
-});
-kms.config.apiVersion = {
-    kms: "2012-10-17"
-};
+function decrypt(toDecrypt, relativeOrAbsolutePathtoPrivateKey) {
+  const absolutePath = path.resolve(relativeOrAbsolutePathtoPrivateKey)
+  const privateKey = fs.readFileSync(absolutePath, 'utf8')
+  const buffer = Buffer.from(toDecrypt, 'base64')
+  const decrypted = crypto.privateDecrypt(
+    {
+      key: privateKey.toString(),
+      format: 'pem',
+      cipher: 'aes-256-cbc',
+     // passphrase,
+    },
+    buffer,
+  )
+  return decrypted.toString('utf8')
+}
 
-kms.listKeys((err,data) => {
-    if (err) console.log(err); // an error occurred
-    else     console.log("data",data);           // successful response
-});
+const enc = encrypt('hello', 'encrypted-secret/public.pem')
+console.log('enc', enc)
+
+const dec = decrypt(enc, `encrypted-secret/private.pem`)
+console.log('dec', dec)
